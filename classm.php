@@ -29,18 +29,19 @@ add_filter( 'manage_edit-class_columns', 'classm_edit_class_columns' ) ;
 add_action( 'manage_class_posts_custom_column', 'classm_manage_class_columns', 10, 2 );
 
 
-function classm_manage_class_columns ( $column, $post_id ) {
+function classm_manage_class_columns ( $column, $post_id )
+{
     global $post;
 
     switch ($column) {
 
         case 'students' :
 
-            $post = get_post ($post_id);
+            $post = get_post($post_id);
 
             $users = get_users(array('
 
-            meta_key'           => '_class'));
+            meta_key' => '_class'));
 
 
             foreach ($users as $user) {
@@ -51,42 +52,43 @@ function classm_manage_class_columns ( $column, $post_id ) {
 
                 if ($post->post_name == $class) {
 
-                    echo '<a href="'.get_edit_user_link( $user->ID ).'">'.$user->user_login."</a>, ";
+                    echo '<a href="' . get_edit_user_link($user->ID) . '">' . $user->user_login . "</a>, ";
 
                 }
             }
 
-        break;
+            break;
 
 
         case 'courses':
 
             $users = get_users(array('
 
-            meta_key'           => '_class'));
+            meta_key' => '_class'));
 
+            $course_ids = array();
 
             foreach ($users as $user) {
 
-                $course_statuses = WooThemes_Sensei_Utils::sensei_check_for_activity( array( 'user_id' => $user->ID, 'type' => 'sensei_course_status' ), true );
+                $course_statuses = WooThemes_Sensei_Utils::sensei_check_for_activity(array('user_id' => $user->ID, 'type' => 'sensei_course_status'), true);
 
                 // User may only be on 1 Course
-                if ( !is_array($course_statuses) ) {
-                    $course_statuses = array( $course_statuses );
+                if (!is_array($course_statuses)) {
+                    $course_statuses = array($course_statuses);
                 }
 
                 $completed_ids = $active_ids = array();
 
-                foreach( $course_statuses as $course_status ) {
 
-                    if ( WooThemes_Sensei_Utils::user_completed_course( $course_status, $user->ID ) ) {
+                foreach ($course_statuses as $course_status) {
+
+                    if (WooThemes_Sensei_Utils::user_completed_course($course_status, $user->ID)) {
                         $completed_ids[] = $course_status->comment_post_ID;
 
                         foreach ($completed_ids as $compid) {
 
-                            $post = get_post($compid);
+                            //array_push($course_ids, $compid);
 
-                            echo $post->post_name;
                         }
 
                     } else {
@@ -95,22 +97,52 @@ function classm_manage_class_columns ( $column, $post_id ) {
 
                         foreach ($active_ids as $actid) {
 
+                            $course_ids[] = intval($actid);
 
-                            $post = get_post($actid);
-
-                            echo '<a href="'.get_edit_post_link($post->ID).'">'.$post->post_title."</a>, ";
 
                         }
+
+
                     }
+
+
                 }
 
 
             }
 
+            $cid = super_unique_array($course_ids);
+
+            $all_ids = [];
+
+            foreach ($cid as $id) {
+
+                $post = get_post($id);
+
+                echo '<a href="' . get_edit_post_link($post->ID) . '">' . $post->post_title . "</a>, ";
+
+            }
+
     }
 
+}
+
+function super_unique_array($array)
+{
+    $result = array_map("unserialize", array_unique(array_map("serialize", $array)));
+
+    foreach ($result as $key => $value)
+    {
+        if ( is_array($value) )
+        {
+            $result[$key] = super_unique($value);
+        }
+    }
+
+    return $result;
 
 }
+
 
 function classm_edit_class_columns( $columns ) {
 
