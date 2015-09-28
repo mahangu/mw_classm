@@ -154,8 +154,8 @@ class MW_Class_Management {
 
     function classm_admin_meta_boxes()
     {
-        add_meta_box("classm_students", "Students", "classm_admin_students_meta_box_markup", "class", "normal", "high", null);
-        add_meta_box("classm_teachers", "Teachers", "classm_admin_teachers_meta_box_markup", "class", "normal", "high", null);
+        add_meta_box("classm_students", "Students", array ($this, "classm_admin_students_meta_box_markup"), "class", "normal", "high", null);
+        add_meta_box("classm_teachers", "Teachers", array ($this, "classm_admin_teachers_meta_box_markup"), "class", "normal", "high", null);
     }
 
     function classm_admin_students_meta_box_markup($post)
@@ -163,31 +163,38 @@ class MW_Class_Management {
 
         $users = get_users();
 
+        echo "<ol>";
+
         foreach ($users as $user) {
 
             $class = get_user_meta($user->ID, '_class', true);
 
             if ($class == $post->post_name && !in_array('teacher', $user->roles) ) {
 
-                print $user->user_login.'<br />';
+                echo '<li><a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name. "</a></li> ";
 
             }
         }
 
+        echo "</ol>";
+
     }
 
-    function classm_admin_teachers_meta_box_markup() {
+    function classm_admin_teachers_meta_box_markup($post) {
 
         echo '<ol>';
 
-        $users = get_users('role=teacher');
+        $users = get_users(array(
+
+            'meta_key' => '_class'));
+
         foreach ($users as $user) {
 
             $class = get_user_meta($user->ID, '_class', true);
 
-            if ($class == $post->post_name) {
+            if ($post->post_name == $class && in_array('teacher',$user->roles)) {
 
-                print $user->user_login.'<br />';
+                echo '<li><a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name. "</a></li> ";
 
             }
         }

@@ -25,7 +25,7 @@ Class MWCM_Classes {
 
                 $users = get_users(array(
 
-                'meta_key' => '_class'));
+                    'meta_key' => '_class'));
 
                 foreach ($users as $user) {
 
