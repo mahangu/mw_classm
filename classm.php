@@ -35,13 +35,14 @@ function classm_manage_class_columns ( $column, $post_id )
 
     switch ($column) {
 
-        case 'students' :
+        case 'teachers' :
 
             $post = get_post($post_id);
 
-            $users = get_users(array('
+            $users = get_users(array(
 
-            meta_key' => '_class'));
+            'meta_key'  => '_class',
+            'role'      => 'teacher'));
 
 
             foreach ($users as $user) {
@@ -60,11 +61,39 @@ function classm_manage_class_columns ( $column, $post_id )
             break;
 
 
+
+
+        case 'students' :
+
+            $post = get_post($post_id);
+
+            $users = get_users(array('
+
+            meta_key' => '_class'));
+
+
+            foreach ($users as $user) {
+
+                $class = get_user_meta($user->ID, '_class', true);
+
+//                var_dump($class);
+
+                if ($post->post_name == $class && !in_array('teacher',$user->roles)) {
+
+                    echo '<a href="' . get_edit_user_link($user->ID) . '">' . $user->user_login . "</a>, ";
+
+                }
+            }
+
+            break;
+
+
         case 'courses':
 
             $users = get_users(array('
 
             meta_key' => '_class'));
+
 
             $course_ids = array();
 
@@ -72,36 +101,41 @@ function classm_manage_class_columns ( $column, $post_id )
 
                 $course_statuses = WooThemes_Sensei_Utils::sensei_check_for_activity(array('user_id' => $user->ID, 'type' => 'sensei_course_status'), true);
 
-                // User may only be on 1 Course
-                if (!is_array($course_statuses)) {
-                    $course_statuses = array($course_statuses);
-                }
+                $class = get_user_meta($user->ID, '_class', true);
 
-                $completed_ids = $active_ids = array();
+                if ($class == $post->post_name) {
+
+                        // User may only be on 1 Course
+                    if (!is_array($course_statuses)) {
+                        $course_statuses = array($course_statuses);
+                    }
+
+                    $completed_ids = $active_ids = array();
 
 
-                foreach ($course_statuses as $course_status) {
+                    foreach ($course_statuses as $course_status) {
 
-                    if (WooThemes_Sensei_Utils::user_completed_course($course_status, $user->ID)) {
-                        $completed_ids[] = $course_status->comment_post_ID;
+                        if (WooThemes_Sensei_Utils::user_completed_course($course_status, $user->ID)) {
+                            $completed_ids[] = $course_status->comment_post_ID;
 
-                        foreach ($completed_ids as $compid) {
+                            foreach ($completed_ids as $compid) {
 
-                            //array_push($course_ids, $compid);
+                                //array_push($course_ids, $compid);
+
+                            }
+
+                        } else {
+
+                            $active_ids[] = $course_status->comment_post_ID;
+
+                            foreach ($active_ids as $actid) {
+
+                                $course_ids[] = intval($actid);
+
+
+                            }
 
                         }
-
-                    } else {
-
-                        $active_ids[] = $course_status->comment_post_ID;
-
-                        foreach ($active_ids as $actid) {
-
-                            $course_ids[] = intval($actid);
-
-
-                        }
-
 
                     }
 
@@ -122,6 +156,8 @@ function classm_manage_class_columns ( $column, $post_id )
                 echo '<a href="' . get_edit_post_link($post->ID) . '">' . $post->post_title . "</a>, ";
 
             }
+
+        break;
 
     }
 
@@ -149,6 +185,7 @@ function classm_edit_class_columns( $columns ) {
     $columns = array(
         'cb' => '<input type="checkbox" />',
         'title' => __( 'Class' ),
+        'teacher' => __( 'Teacher' ),
         'students' => __( 'Students' ),
         'courses' => __( 'Courses' ),
         'avgrade' => __( 'Average Grade' )
@@ -271,12 +308,15 @@ function classm_edit_user_class_section ($user) {
 
     if (!empty($posts)) {
 
+        echo '<select name="class">';
+
         foreach ($posts as $post) {
             //echo $term->name;
-            echo '<input type="radio" name="class" value="'.$post->post_name.'">'.$post->post_title.'</input><br />';
+            echo '<option value="'.$post->post_name.'">'.$post->post_title.'</option><br />';
 ;
         }
 
+        echo "</select>";
     }
 
 }
@@ -322,7 +362,7 @@ function classm_admin_students_meta_box_markup($post)
 
         $class = get_user_meta($user->ID, '_class', true);
 
-        if ($class == $post->post_name) {
+        if ($class == $post->post_name && !in_array('teacher', $user->roles) ) {
 
             print $user->user_login.'<br />';
 
@@ -336,9 +376,16 @@ function classm_admin_teachers_meta_box_markup()
 
     echo '<ol>';
 
-    $blogusers = get_users('role=teacher');
-    foreach ($blogusers as $user) {
-        echo '<li>' . esc_html($user->user_nicename) . '</li>';
+    $users = get_users('role=teacher');
+    foreach ($users as $user) {
+
+        $class = get_user_meta($user->ID, '_class', true);
+
+        if ($class == $post->post_name) {
+
+            print $user->user_login.'<br />';
+
+        }
     }
 
     echo '</ol>';
