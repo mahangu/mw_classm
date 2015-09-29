@@ -174,7 +174,7 @@ Class MWCM_Classes {
                 }
 
                 $cid =  MW_Class_Management()->utils->super_unique_array($course_ids);
-                
+
                 foreach ($cid as $id) {
 
                     $post = get_post($id);
