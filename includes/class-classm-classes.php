@@ -110,7 +110,7 @@ Class MWCM_Classes {
 
                     if ($post->post_name == $class && !in_array('teacher',$user->roles)) {
 
-                        echo MW_Class_Management()->utils->generate_user_link($user);
+                        echo MW_Class_Management()->utils->generate_learner_link($user);
 
                     }
                 }
@@ -179,7 +179,7 @@ Class MWCM_Classes {
 
                     $post = get_post($id);
 
-                    echo '<a href="' . get_edit_post_link($post->ID) . '">' . $post->post_title . "</a>, ";
+                    echo MW_Class_Management()->utils->generate_course_link($post);
 
                 }
 
