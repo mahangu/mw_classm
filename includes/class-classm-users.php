@@ -20,17 +20,15 @@ Class MWCM_Users
 
     function edit_user_class_section ($user) {
 
+        if (!current_user_can('manage_options')) {
+
+            return;
+
+        }
+
+        $class = get_user_meta($user->ID, '_class', true);
 
         echo "<h3>Class Management</h3>";
-
-        $tax = get_taxonomy('class');
-
-        /* Make sure the user can assign terms of the class taxonomy before proceeding. */
-//        if (!current_user_can($tax->cap->assign_terms)) {
-//
-//            return;
-//
-//        }
 
         $args = array(
             'orderby'          => 'date',
@@ -48,8 +46,15 @@ Class MWCM_Users
 
             foreach ($posts as $post) {
 
-                echo '<option value="'.$post->post_name.'">'.$post->post_title.'</option><br />';
-                var_dump($post);
+                if ($class == $post->post_name) {
+
+                    echo '<option selected="selected" value="'.$post->post_name.'">'.$post->post_title.'</option><br />';
+
+                } else {
+
+                    echo '<option value="' . $post->post_name . '">' . $post->post_title . '</option><br />';
+
+                }
 
             }
 
@@ -69,7 +74,7 @@ Class MWCM_Users
 
     }
 
-    function classm_update_class_count() {
+    function update_class_count() {
 
 
 

@@ -11,12 +11,6 @@ class MW_Class_Management {
     public function __construct ( $file, $version = '1.0.1' ){
 
 
-
-
-
-
-
-
         // Initalise the other classes we'll be using.
 
         $this->initalise_classes();
@@ -29,9 +23,10 @@ class MW_Class_Management {
      *
      * @since 1.0.0
      * @static
-     * @see Sensei_Content_Drip()
+     * @see MW_Class_Management()
      * @return Main MW_Class_Management
      */
+
     public static function instance ( $file, $version = '1.0.1' )
     {
         if (is_null(self::$_instance)) {

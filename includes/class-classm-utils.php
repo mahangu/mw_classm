@@ -18,10 +18,20 @@ Class MWCM_Utils {
 
     }
 
-    function generate_user_link($post) {
 
+    // Helper function that generates a link to the user's profile.
 
+    function generate_user_link($user, $list = false) {
 
+        if ($list) {
+
+            return '<li><a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name . "</a></li>";
+
+        } else {
+
+            return '<a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name . "</a>, ";
+
+        }
 
     }
 
