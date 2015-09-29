@@ -6,15 +6,50 @@ Class MWCM_Classes {
 
     public function __construct() {
 
+        // Setup Class CPT
+        add_action( 'init', array( $this, 'setup_class_post_type') );
 
+        //Create and manage columns of Class CPT
         add_filter( 'manage_edit-class_columns', array( $this, 'edit_class_columns' )) ;
         add_action( 'manage_class_posts_custom_column', array( $this, 'manage_class_columns'), 10, 2 );
+
+        //Add Metaboxes to Class CPT post screen
+        add_action("add_meta_boxes", array( $this, 'add_admin_meta_boxes'));
+
+    }
+
+
+    public function setup_class_post_type() {
+
+        register_post_type( 'class',
+            array(
+                'labels' => array(
+                    'name' => __( 'Classes' ),
+                    'singular_name' => __( 'Class' )
+                ),
+                'public' => true,
+                'has_archive' => true,
+                'menu_icon'   => 'dashicons-groups',
+                'supports' => array( 'title'),
+            )
+        );
+
 
 
     }
 
-    public function manage_class_columns ( $column, $post_id )
+
+    public function setup_class_taxonomies()
     {
+
+
+        register_taxonomy( 'level', 'class', $args );
+
+
+    }
+
+    public function manage_class_columns ( $column, $post_id ) {
+
         global $post;
 
         switch ($column) {
@@ -141,7 +176,6 @@ Class MWCM_Classes {
     }
 
 
-
     public function edit_class_columns( $columns ) {
 
         $columns = array(
@@ -156,6 +190,60 @@ Class MWCM_Classes {
         return $columns;
     }
 
+
+
+
+    public function add_admin_meta_boxes()
+    {
+        add_meta_box("classm_students", "Students", array ($this, "admin_students_meta_box_markup"), "class", "normal", "high", null);
+        add_meta_box("classm_teachers", "Teachers", array ($this, "admin_teachers_meta_box_markup"), "class", "normal", "high", null);
+    }
+
+
+    public function admin_students_meta_box_markup($post)
+    {
+
+        $users = get_users();
+
+        echo "<ol>";
+
+        foreach ($users as $user) {
+
+            $class = get_user_meta($user->ID, '_class', true);
+
+            if ($class == $post->post_name && !in_array('teacher', $user->roles) ) {
+
+                echo '<li><a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name. "</a></li> ";
+
+            }
+        }
+
+        echo "</ol>";
+
+    }
+
+    public function admin_teachers_meta_box_markup($post) {
+
+        echo '<ol>';
+
+        $users = get_users(array(
+
+            'meta_key' => '_class'));
+
+        foreach ($users as $user) {
+
+            $class = get_user_meta($user->ID, '_class', true);
+
+            if ($post->post_name == $class && in_array('teacher',$user->roles)) {
+
+                echo '<li><a href="' . get_edit_user_link($user->ID) . '">' . $user->display_name. "</a></li> ";
+
+            }
+        }
+
+        echo '</ol>';
+
+    }
 
 
 

@@ -18,6 +18,13 @@ Class MWCM_Utils {
 
     }
 
+    function generate_user_link($post) {
+
+
+
+
+    }
+
 }
 
 
